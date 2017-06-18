@@ -758,61 +758,57 @@ int sair_chegar(TG *g, int id1, int id2, int caminho)
 
 	return caminho;
 }
-int fortemente_conexos(TG *g)
+int conexo(TG *g)
 {
 	int* resp = (int*)malloc(sizeof(int));
-	resp[0] = 0;
 
-	int i = 1;
+	int i = 0;
 
 	TNo *no = g->prim_no;
 
 	while(no)
 	{
-		int no_chegou_em_si_mesmo = sair_chegar(g, no->id_no, no->id_no, 0);  //se certifica que existe uma resposta
+			int no_chegou_em_si_mesmo = sair_chegar(g, no->id_no, no->id_no, 0);  //se certifica que existe uma resposta
 
-		if(no_chegou_em_si_mesmo)
-		{
-			int j = 1;
-
-			while(j <= i)
+			if(no_chegou_em_si_mesmo)
 			{
-				if(digito_em_comum(no_chegou_em_si_mesmo, resp[j - 1]))
-				{
-					break;
-				}
+				
+					int j = 0;
 
-				j++;
+					while(j <= i)
+					{
+						if(digito_em_comum(no_chegou_em_si_mesmo,resp[j]))
+						{
+						 	break;	
+						}
+
+						j++;					
+					}
+					
+					resp = (int*)realloc(resp, sizeof(int) * (j+1));
+
+					resp[j] = junta_resultado(resp[j], sair_chegar(g, no->id_no, no->id_no, 0));
+					
+					if(j  >i)
+					{ 
+						i++;
+					}
+				
 			}
 
-			resp = (int*)realloc(resp, sizeof(int) * j);
-
-			resp[j - 1] = junta_resultado(resp[j - 1], sair_chegar(g, no->id_no, no->id_no, 0));
-
-			if(j > i)
-			{
-				i++;
-			}
-		}
-
-		no = no->prox_no;
+		no = no->prox_no;		
 	}
 
-	if(!directed(g) && (i == 1))
-	{
-		printf("O grafo nao eh orientado e eh conectado!");
+	if(i == 1)
+	{ 
 		free(resp);
 
 		/* retorna 1 (devem ser chamadas as outras funções) */
-		return 1;
+		return 1;                                   
 	}
+	printf("O grafo nao eh orientado e nao eh conectado! \nOs componentes conectados sao:\n");
 
-	if(directed(g))
-		printf("O grafo eh orientado!\nOs componentes fortemente conexos sao:\n");
-	else
-		printf("O grafo nao eh orientado e nao eh conectado! \nOs componentes conectados sao:\n");
-
-	if(!i)
+	if(!i) 
 		printf("\tNenhum\n");
 
 	int j = 1;
@@ -826,18 +822,65 @@ int fortemente_conexos(TG *g)
 	free(resp);
 
 	/* Retorna 0 pois nenhuma outra função precisa ser chamada */
-	return 0;
+	return 0; 
 }
-/* Função Booleana */
-int conexo(TG* G)
+int fortemente_conexos(TG *g)
 {
-	/* IMPLEMENTAÇÃO */
-}
+	int* resp = (int*)malloc(sizeof(int));
 
-/* Função Booleana */
-int componentes_conexos(TG* G)
-{
-	/* IMPLEMENTAÇÃO */
+	int i = 0;
+
+	TNo *no = g->prim_no;
+
+	while(no)
+	{
+			int no_chegou_em_si_mesmo = sair_chegar(g, no->id_no, no->id_no, 0);  //se certifica que existe uma resposta
+
+			if(no_chegou_em_si_mesmo &&((no_chegou_em_si_mesmo/10)%100!=0))
+			{	
+					int j = 0;
+
+					while(j <= i)
+					{
+						if(digito_em_comum(no_chegou_em_si_mesmo,resp[j]))
+						{
+						 	break;	
+						}
+
+						j++;					
+					}
+					
+					resp = (int*)realloc(resp, sizeof(int) * (j+1));
+
+					resp[j] = junta_resultado(resp[j], sair_chegar(g, no->id_no, no->id_no, 0));
+					
+					if(j  >i)
+					{ 
+						i++;
+					}
+				
+			}
+
+		no = no->prox_no;		
+	}
+
+	printf("Os componentes fortemente conexos sao:\n");
+	
+	if(!i) 
+		printf("\tNenhum\n");
+
+	int j = 1;
+
+	while(j <= i)
+	{
+		printf("%d\n", resp[j]);
+		j++;
+	}
+
+	free(resp);
+
+	/* Retorna 0 pois nenhuma outra função precisa ser chamada */
+	return 0; 
 }
 
 void information(TG* G)
@@ -853,7 +896,7 @@ void information(TG* G)
 		if(directed(G))
 		{
 			printf("- Orientado\n");
-			fortemente_conexos(G);
+			int resp=fortemente_conexos(G);
 		}
 		/* Se esse grafo não for orientado, verifique se ele é conexo.*/
 		else
@@ -863,18 +906,14 @@ void information(TG* G)
 			/*	Se for conectado, indique as pontes (ponte é uma aresta cuja a remoção desconecta o grafo) e os pontos de articulação 
 			(um ponto de articulação é um vértice de um grafo tal que a remoção desse vértice provoca um aumento no número de componentes conectados) existentes no grafo.
 			*/
-			if(conexo(G))
+			int resp=conexo(G);
+			if(resp)
 			{
 				achaPontes(G);
 				achaArticulacao(G);
 			}
-			/*
-				Se não for conectado, informe os componentes conexos desse grafo.
-			*/
-			else
-			{
-				componentes_conexos(G);
-			}
+			
+			
 		}
 	}
 }
